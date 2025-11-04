@@ -1,0 +1,81 @@
+// validation.js - Validação avançada de formulários
+function initValidation() {
+  const form = document.querySelector("form");
+  if (!form) return;
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const isValid = validateForm(form);
+    if (isValid) {
+      alert("✅ Cadastro realizado com sucesso!");
+      saveFormData(form);
+      form.reset();
+    }
+  });
+}
+
+function validateForm(form) {
+  let valid = true;
+  const inputs = form.querySelectorAll("input[required], select[required]");
+  inputs.forEach(input => {
+    const field = input.name || input.id;
+    const error = document.querySelector(`#error-${field}`);
+
+    if (error) error.textContent = "";
+
+    if (!input.value.trim()) {
+      showError(input, "Campo obrigatório");
+      valid = false;
+    } else if (input.type === "email" && !isValidEmail(input.value)) {
+      showError(input, "E-mail inválido");
+      valid = false;
+    } else if (input.name === "cpf" && !isValidCPF(input.value)) {
+      showError(input, "CPF inválido");
+      valid = false;
+    }
+  });
+  return valid;
+}
+
+function showError(input, message) {
+  let error = document.querySelector(`#error-${input.name}`);
+  if (!error) {
+    error = document.createElement("small");
+    error.id = `error-${input.name}`;
+    error.style.color = "red";
+    input.insertAdjacentElement("afterend", error);
+  }
+  error.textContent = message;
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Função simples de validação de CPF
+function isValidCPF(cpf) {
+  cpf = cpf.replace(/[^\d]+/g, '');
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+  let resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.charAt(9))) return false;
+
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10 || resto === 11) resto = 0;
+
+  return resto === parseInt(cpf.charAt(10));
+}
+
+// Armazenar dados localmente (LocalStorage)
+function saveFormData(form) {
+  const formData = {};
+  form.querySelectorAll("input, select").forEach(input => {
+    formData[input.name] = input.value;
+  });
+  localStorage.setItem("cadastroUsuario", JSON.stringify(formData));
+}

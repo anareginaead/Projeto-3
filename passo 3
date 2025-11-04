@@ -1,0 +1,32 @@
+// spa.js - Sistema simples de Single Page Application (SPA)
+function initSPA() {
+  const links = document.querySelectorAll("a[data-link]");
+  const content = document.querySelector("#content");
+
+  if (!links.length || !content) return;
+
+  links.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const page = link.getAttribute("href");
+      loadPage(page);
+    });
+  });
+}
+
+async function loadPage(page) {
+  const content = document.querySelector("#content");
+
+  try {
+    const response = await fetch(page);
+    const html = await response.text();
+    content.innerHTML = html;
+    window.history.pushState({}, "", page);
+  } catch (error) {
+    content.innerHTML = `<p style="color:red;">Erro ao carregar página.</p>`;
+  }
+}
+
+window.addEventListener("popstate", () => {
+  loadPage(window.location.pathname);
+});
